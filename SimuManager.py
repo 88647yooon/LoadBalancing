@@ -2,6 +2,7 @@ from DataProvider import DataProvider
 from NormalTimer import NormalTimer
 from AlarmFloodTimer import AlarmFloodTimer
 from LoadBalancer import LoadBalancer
+import time
 class SimulationManager:
     def __init__(self):
         # 1. 필요한 부품들을 여기서 다 만듭니다.
@@ -12,19 +13,34 @@ class SimulationManager:
         self.timer1 = NormalTimer()
         self.timer2 = AlarmFloodTimer()
         
-    def start(self, total_count=1000000):
+    def start(self, total_count):
         print(f"시뮬레이션 시작 (목표: {total_count}개)")
+        self.start_time = time.time()
         
         # 데이터를 하나씩 생성해서 로드밸런서로 보냅니다.
-        for packet in self.provider.stream_data():
+        for packet in self.provider.stream_data(total_count):
             
-            # [연결 지점] 로드밸런서에게 데이터를 던져줍니다.
             self.load_balancer.receive(packet)
-            
-            # 타이머 박자에 맞춰 쉽니다.
-            self.timer.wait()
-            
-            # (선택 사항) 특정 조건에서 타이머를 교체하는 로직도 여기 넣을 수 있습니다.
-            # if 상황 == "위급": self.timer = AlarmFloodTimer()
+            self.timer2.wait()
 
-        print("시뮬레이션 완료")
+        self.end_time = time.time()
+        
+        print("[최종 실험 결과]")
+        self.calculate_latency(total_count)
+        
+        
+    def calculate_latency(self, total_count):
+        duration_sec = self.end_time - self.start_time
+        duration_ms = duration_sec * 1000
+        
+        # 0으로 나누기 방지
+        avg_latency = duration_ms / total_count if total_count > 0 else 0
+        
+        print("\n"+ "="*20 + " 실험 결과 분석 " + "="*20)
+        print(f"✔️ 총 처리 패킷: {total_count:,} 개")
+        print(f"⏱️ 총 소요 시간: {duration_ms:,.2f} ms")
+        print(f"⏱️ 패킷당 평균 시간: {avg_latency:.4f} ms")
+        print("="*55 + "\n")
+        
+        return duration_ms
+        

@@ -1,7 +1,6 @@
 import random
 import time
 import uuid
-from SimuManager import SimulationManager
 # 트래픽을 생성만 하는 책임을 가지는 클래스
 class DataProvider():
     def __init__(self, num_machines):
@@ -9,7 +8,6 @@ class DataProvider():
         self.machine_ids = [f"MCH-{i:04d}" for i in range(num_machines)]
         self.severities = ["INFO", "WARNING", "CRITICAL"]
         self.is_storm_mode = False
-        self.total_count= 1000000
         
     def create_packet(self, machine_id, sequence):
      
@@ -32,20 +30,9 @@ class DataProvider():
         }
         # 산업용 알람과 비슷하게 생긴 딕셔너리
     }
-     
-    def make_data(self):
-
-        transactions = []
+    
         
-        for i in range(self.total_count):
-            m_id = self.machine_ids[i % len(self.machine_ids)]
-            
-            transactions.append(self.create_packet(m_id, i))
-            
-            
-        return transactions #리스트로 한번에 쏨
-        
-    def stream_data(self):
-        for i in range(self.total_count):
+    def stream_data(self, total_count):
+        for i in range(total_count):
             m_id = self.machine_ids[i % len(self.machine_ids)]
             yield self.create_packet(m_id,i) # 하나씩 만들때마다 쏨

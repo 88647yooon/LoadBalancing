@@ -1,5 +1,6 @@
-import time
+import threading
 import random
+from Server import Server
 class LoadBalancer:
     def __init__(self, num_servers=3):
         # 1. 로드밸런서가 관리할 서버들을 만듭니다.
@@ -10,39 +11,25 @@ class LoadBalancer:
         # 2. 알고리즘을 통해 최적의 서버를 고릅니다.
         target_server = self.get_least_connection_server()
         
-        # 3. 고른 서버에게 패킷을 전달합니다.
-        target_server.handle(packet)
+        thread = threading.Thread(target=target_server.handle, args=(packet,))
+        thread.start()
 
     def get_least_connection_server(self):
-        """Least Connection 알고리즘 핵심 로직"""
-        # 모든 서버 중 'current_load'가 가장 적은 놈을 찾아서 반환합니다.
-        return min(self.servers, key=lambda s: s.current_load)
+     # 1. 현재 최소 부하가 얼마인지 찾습니다.
+     min_load = min(s.current_load for s in self.servers)
     
+     # 2. 최소 부하를 가진 서버들을 '모두' 리스트에 담습니다.
+     least_loaded_servers = [s for s in self.servers if s.current_load == min_load]
     
-    class Server:
-     def __init__(self, server_id):
-        self.server_id = server_id
-        self.current_load = 0  # 현재 처리 중인 연결(트랜잭션) 수
-        self.total_processed = 0 # 총 처리한 패킷 수
-        self.total_latency = 0   # 총 지연 시간 합계
-
-     def handle(self, packet):
-        # 1. 처리 시작 (부하 증가)
-        start_time = time.time()
-        self.current_load += 1
+     # 3. 최소 부하 서버가 여러 대라면 그중 하나를 랜덤하게 골라 반환합니다.
+     return random.choice(least_loaded_servers)
+    
+    def display_stats(self):
+        """현재 모든 서버의 누적 처리량과 부하 상태를 출력합니다."""
+        print("\n" + "="*50)
+        print(f"{'Server Name':^15} | {'Total Processed':^15} | {'Current Load':^12}")
+        print("-" * 50)
         
-        # 2. 작업 처리 시뮬레이션 
-        # 성능이 같으므로 모든 서버가 동일한 범위(예: 0.001~0.003초) 내에서 랜덤하게 처리한다고 가정합니다.
-        processing_time = random.uniform(0.001, 0.003)
-        time.sleep(processing_time) # 실제 실험 시 1,000만 개를 하려면 이 부분을 조정해야 합니다.
-        
-        # 3. 처리 완료 (부하 감소)
-        self.current_load -= 1
-        self.total_processed += 1
-        
-        # 4. 성능 측정
-        end_time = time.time()
-        latency = end_time - start_time
-        self.total_latency += latency
-        
-        return latency
+        for server in self.servers:
+            print(f"{server.server_id:^15} | {server.total_processed:^15,} | {server.current_load:^12}")
+        print("="*50 + "\n")
