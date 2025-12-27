@@ -1,14 +1,15 @@
 import random
 import time
 import uuid
+from SimuManager import SimulationManager
 # 트래픽을 생성만 하는 책임을 가지는 클래스
 class DataProvider():
-    def __init__(self, num_machines = 1000):
+    def __init__(self, num_machines):
         
         self.machine_ids = [f"MCH-{i:04d}" for i in range(num_machines)]
         self.severities = ["INFO", "WARNING", "CRITICAL"]
         self.is_storm_mode = False
-        self.total_count=100
+        self.total_count= 1000000
         
     def create_packet(self, machine_id, sequence):
      
