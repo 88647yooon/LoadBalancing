@@ -7,7 +7,7 @@ class Server:
         self.total_processed = 0 
         self.total_latency = 0  
 
-     def handle(self):
+     def handle(self, packet):
 
         start_time = time.time()
         self.current_load += 1

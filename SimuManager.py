@@ -2,14 +2,15 @@ from DataProvider import DataProvider
 from NormalTimer import NormalTimer
 from AlarmFloodTimer import AlarmFloodTimer
 from LoadBalancer import LoadBalancer
+from ControlTimer import ControlTimer
 import time
 class SimulationManager:
     def __init__(self):
       
         self.provider = DataProvider(num_machines=1000)
         self.load_balancer = LoadBalancer()
-        self.timer1 = NormalTimer()
-        self.timer2 = AlarmFloodTimer()
+        self.timer = AlarmFloodTimer() # 1초에 몇개의 알람을 생성할건지 -> 바꿔야함
+    
         
     def start(self, total_count):
         print(f"시뮬레이션 시작 (목표: {total_count}개)")
@@ -18,7 +19,7 @@ class SimulationManager:
         for packet in self.provider.stream_data(total_count):
             
             self.load_balancer.receive(packet)
-            self.timer2.wait()
+            self.timer.wait()
 
         self.end_time = time.time()
         
@@ -32,9 +33,10 @@ class SimulationManager:
         avg_latency = duration_ms / total_count if total_count > 0 else 0
         
         print("\n"+ "="*20 + " 실험 결과 분석 " + "="*20)
-        print(f"✔️ 총 처리 패킷: {total_count:,} 개")
-        print(f"⏱️ 총 소요 시간: {duration_ms:,.2f} ms")
-        print(f"⏱️ 패킷당 평균 시간: {avg_latency:.4f} ms")
+        print(f"총 처리 패킷: {total_count:,} 개")
+        print(f"총 소요 시간: {duration_ms:,.2f} ms")
+        print(f"패킷당 평균 시간: {avg_latency:.4f} ms")
+        print("transqction per second:" , self.timer.tps)
         print("="*55 + "\n")
         
         return duration_ms

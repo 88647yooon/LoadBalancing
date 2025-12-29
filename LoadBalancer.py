@@ -27,3 +27,4 @@ class LoadBalancer:
         for server in self.servers:
             print(f"{server.server_id:^15} | {server.total_processed:^15,} | {server.current_load:^12}")
         print("="*50 + "\n")
+        #current load가 0 이상이면 병목현상이 있다는 뜻임
